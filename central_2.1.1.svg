@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
+"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="1000" height="900" xml:lang="fr"
+xmlns="http://www.w3.org/2000/svg"
+xmlns:xlink="http://www.w3.org/1999/xlink">
+   <title>AjninAttack</title>
+   <desc>Un jeu de ninja en SVG appelé AjninAttack</desc>
+
+<defs>
+    <animateMotion xlink:href="#ninja"
+    path="m0,0 l0,-300 l500,10 l0,290"
+    begin="2s;redescend.end+2s" dur="0.1s"
+    fill="freeze" id="remonte"/>
+    <animateMotion xlink:href="#ninja"
+    path="m500,0 l0,-300 l-500,10 l0,290"
+    begin="remonte.end+2s" dur="0.1s"
+    fill="freeze" id="redescend"/>
+    <animateMotion xlink:href="#ninja2"
+    path="m0,0 l0,-300 l500,10 l0,290"
+    begin="2.5s;redescend2.end+2s" dur="0.1s"
+    fill="freeze" id="remonte2"/>
+    <animateMotion xlink:href="#ninja2"
+    path="m500,0 l0,-300 l-500,10 l0,290"
+    begin="remonte2.end+2s" dur="0.1s"
+    fill="freeze" id="redescend2"/>
+    <animateMotion xlink:href="#ninja3"
+    path="m0,0 l0,-300 l425,10 l0,290"
+    begin="2.5s;redescend3.end+1s" dur="0.05s"
+    fill="freeze" id="remonte3"/>
+    <animateMotion xlink:href="#ninja3"
+    path="m500,0 l0,-300 l-425,10 l0,290"
+    begin="remonte3.end+1s" dur="0.05s"
+    fill="freeze" id="redescend3"/>
+
+    <set xlink:href="#ninja"
+    attributeName="visibility" attributeType="CSS"
+    to="hidden" begin="ninja.click"/>
+    <set xlink:href="#ninja2"
+    attributeName="visibility" attributeType="CSS"
+    to="hidden" begin="ninja2.click"/>
+    <set xlink:href="#ninja3"
+    attributeName="visibility" attributeType="CSS"
+    to="hidden" begin="2s;ninja3.click;arrive3.start+5s"/>
+    <set xlink:href="#ninja4"
+    attributeName="visibility" attributeType="CSS"
+    to="hidden" begin="0s;ninja4.click;arrive4.start+5s;32s"/>
+
+    <set xlink:href="#ninja" id="arrive1"
+    attributeName="visibility" attributeType="CSS"
+    to="visible" begin="ninja.click+2s"/>
+    <set xlink:href="#ninja2" id="arrive2"
+    attributeName="visibility" attributeType="CSS"
+    to="visible" begin="ninja2.click+2s"/>
+    <set xlink:href="#ninja3" id="arrive3"
+    attributeName="visibility" attributeType="CSS"
+    to="visible" begin="ninja3.click+12s;17s"/><!-- Rare -->
+    <set xlink:href="#ninja4" id="arrive4"
+    attributeName="visibility" attributeType="CSS"
+    to="visible" begin="ninja4.click+12s;27s"/><!-- Rare -->
+</defs>
+<script>
+<![CDATA[
+window.onerror = function(msg, url, linenumber) {
+    alert('Error message: '+msg+'\nURL: '+url+'\nLine Number: '+linenumber);
+    return true;
+}
+
+var point = 0;
+var dateLoad = new Date();
+var tempsDeJeu = 120000;
+var allowNegativePoints;
+var actualVersion = "2.1.1";
+
+function ajouterPoint(ajoutPoints) {
+    if(ajoutPoints == undefined) {
+        ajoutPoints = 1;
+    }
+    point = point + ajoutPoints;
+    var texte = document.getElementById("info-points");
+    texte.textContent = parseInt(texte.textContent) + ajoutPoints;
+    var pluriel = (ajoutPoints > 1) ? "s" : "";
+    document.getElementById("info-history").textContent = "Gain de " + ajoutPoints + " point" +pluriel+ ".";
+    document.getElementById("info-history").style.setProperty("fill", "green");
+}
+
+function retirerPoint(ajoutPoints) {
+    if(ajoutPoints == undefined) {
+        ajoutPoints = 1;
+    }
+    point = point - ajoutPoints;
+
+    var texte = document.getElementById("info-points");
+    texte.textContent = parseInt(texte.textContent) - ajoutPoints;
+    var pluriel = (ajoutPoints > 1) ? "s" : "";
+    document.getElementById("info-history").textContent = ajoutPoints + " point" +pluriel+ " perdu" + pluriel + ".";
+    document.getElementById("info-history").style.setProperty("fill", "red");
+    while(point < 0 && allowNegativePoints == false)
+    {
+        point++;
+        texte.textContent = parseInt(texte.textContent) + 1;
+    }
+}
+
+function tempsEcoule() {
+    alert("Temps écoulé ! Vous avez " + point + " points !");
+    point = 0;
+    dateLoad = new Date();
+    document.getElementById("info-points").textContent = 0;
+    document.getElementById("info-temps").style.setProperty("fill", "black");
+}
+function descendreTemps() {
+    var texte = document.getElementById("info-temps");
+
+
+    var date_actuelle = new Date();
+    var annee = date_actuelle.getFullYear();
+
+    var date_fini = new Date();
+    date_fini.setTime(dateLoad.getTime() + tempsDeJeu);
+
+    var tps_restant = date_fini.getTime() - date_actuelle.getTime();
+    var s_restantes = tps_restant / 1000;
+    var i_restantes = s_restantes / 60;
+
+    s_restantes = Math.floor(s_restantes % 60);
+    i_restantes = Math.floor(i_restantes);
+
+    texte.textContent = "Il reste " + i_restantes + " minutes et " + s_restantes + " secondes.";
+    if(i_restantes == 0 && s_restantes == 15)
+    {
+        texte.style.setProperty("fill", "red");
+    }
+}
+function play(newPlay) {
+intervaleFin = setInterval(tempsEcoule, tempsDeJeu);
+intervaleTemps = setInterval(descendreTemps, 1000);
+document.getElementById("jeu").style.setProperty("visibility", "visible");
+document.getElementById("home").style.setProperty("visibility", "hidden");
+document.getElementById("background").style.setProperty("opacity", 1);
+if(newPlay) {
+    point = 0;
+    dateLoad = new Date();
+    document.getElementById("info-points").textContent = 0;
+}
+}
+
+function pause() {
+clearInterval(intervaleFin);
+clearInterval(intervaleTemps);
+document.getElementById("jeu").style.setProperty("visibility", "hidden");
+document.getElementById("home").style.setProperty("visibility", "visible");
+document.getElementById("background").style.setProperty("opacity", 0.5);
+}
+
+function settings() {
+document.getElementById("home").style.setProperty("visibility", "hidden");
+document.getElementById("settings").style.setProperty("visibility", "visible");
+}
+
+function retourSettings() {
+document.getElementById("settings").style.setProperty("visibility", "hidden");
+document.getElementById("home").style.setProperty("visibility", "visible");
+document.getElementById("background").style.setProperty("opacity", 0.5);
+}
+
+function setTempsDeJeu(temps) {
+    tempsDeJeu = temps * 1000;
+    nogetClavierNumber();
+}
+
+function addNumber(number) {
+    document.getElementById("set-tmpValue").textContent += number;
+}
+
+function supprNumber() {
+    number = document.getElementById("set-tmpValue").textContent;
+    number = number.substring(0,number.length-1);
+    document.getElementById("set-tmpValue").textContent = number;
+}
+
+function getClavierNumber() {
+     document.getElementById("clavierNumber").style.setProperty("visibility", "visible");
+}
+function nogetClavierNumber() {
+     document.getElementById("clavierNumber").style.setProperty("visibility", "hidden");
+}
+function changeSetAllowNegative() {
+    var allowNegativeValue = document.getElementById("set-negpValue");
+    if(allowNegativeValue.textContent == "Oui") {
+        allowNegativePoints = false;
+        allowNegativeValue.textContent = "Non";
+    } else if(allowNegativeValue.textContent == "Non") {
+        allowNegativePoints = true;
+        allowNegativeValue.textContent = "Oui";
+    } else {
+        allowNegativeValue.textContent = "Erreur";
+    }
+}
+]]>
+</script>
+<script src="http://zone30.fr.cr/tests/ajninattack_update.js?hello"></script>
+
+<rect id="background" x="0" y="0" width="1000" height="1000" style="fill: aqua;opacity: 0.5;"/>
+<g id="jeu" style="visibility: hidden;">
+<g id="ninja" onclick="ajouterPoint();">
+<circle id="tete" cx="100" cy="375" r="40" style="fill: beige;"/>
+<path id="cache-tete" d="M60,375 a40,40 0 1,0 80,0" style="fill: #111;stroke: none;"/>
+<circle id="cheveux0" cx="75" cy="340" r="10" style="fill: brown;"/>
+<circle id="cheveux1" cx="85" cy="335" r="10" style="fill: brown;"/>
+<circle id="cheveux2" cx="95" cy="330" r="10" style="fill: brown;"/>
+<circle id="cheveux3" cx="105" cy="330" r="10" style="fill: brown;"/>
+<circle id="cheveux4" cx="115" cy="335" r="10" style="fill: brown;"/>
+<circle id="cheveux5" cx="125" cy="340" r="10" style="fill: brown;"/>
+<circle id="oeil-g" cx="85" cy="365" r="5" style="fill: black;"/>
+<circle id="oeil-d" cx="115" cy="365" r="5" style="fill: black;"/>
+<rect id="cou-decouvert" x="85" y="395" width="30" height="35" style="fill: #111"/>
+<rect id="cou-couvert" x="85" y="430" width="30" height="30" style="fill: black"/>
+<circle id="teeshirt-h" cx="100" cy="505" r="50" style="fill: black;"/>
+<rect id="teeshirt-b" x="50" y="505" width="100" height="55" style="fill: black;"/>
+<g id="jambes-g">
+<rect id="jambe-g" x="62.5" y="560" width="25" height="100" style="fill: black;"/>
+<rect id="pied-g" x="62.5" y="660" width="45" height="25" style="fill: #111;"/>
+</g>
+<g id="jambes-d">
+<rect id="jambe-d" x="112.5" y="560" width="25" height="100" style="fill: black;" transform="rotate(-90 112.5 560)"/>
+<rect id="pied-d" x="112.5" y="660" width="45" height="25" style="fill: #111;" transform="rotate(-90 112.5 560)"/>
+</g>
+<rect id="bras-g" x="40" y="480" width="25" height="100" style="fill: #111;" transform="rotate(25 65 480)"/>
+<rect id="bras-d" x="125" y="480" width="100" height="25" style="fill: #111;"/>
+</g>
+
+<g id="ninja2" onclick="ajouterPoint();">
+<circle id="tete2" cx="300" cy="375" r="40" style="fill: beige;"/>
+<path id="cache-tete2" d="M260,375 a40,40 0 1,0 80,0" style="fill: #111;stroke: none;"/>
+<circle id="cheveux02" cx="275" cy="340" r="10" style="fill: brown;"/>
+<circle id="cheveux12" cx="285" cy="335" r="10" style="fill: brown;"/>
+<circle id="cheveux22" cx="295" cy="330" r="10" style="fill: brown;"/>
+<circle id="cheveux32" cx="305" cy="330" r="10" style="fill: brown;"/>
+<circle id="cheveux42" cx="315" cy="335" r="10" style="fill: brown;"/>
+<circle id="cheveux52" cx="325" cy="340" r="10" style="fill: brown;"/>
+<circle id="oeil-g2" cx="285" cy="365" r="5" style="fill: black;"/>
+<circle id="oeil-d2" cx="315" cy="365" r="5" style="fill: black;"/>
+<rect id="cou-decouvert2" x="285" y="395" width="30" height="35" style="fill: #111"/>
+<rect id="cou-couvert2" x="285" y="430" width="30" height="30" style="fill: black"/>
+<circle id="teeshirt-h2" cx="300" cy="505" r="50" style="fill: black;"/>
+<rect id="teeshirt-b2" x="250" y="505" width="100" height="55" style="fill: black;"/>
+<g id="jambes-g2">
+<rect id="jambe-g2" x="262.5" y="560" width="25" height="100" style="fill: black;"/>
+<rect id="pied-g2" x="262.5" y="660" width="45" height="25" style="fill: #111;"/>
+</g>
+<g id="jambes-d2">
+<rect id="jambe-d2" x="312.5" y="560" width="25" height="100" style="fill: black;" transform="rotate(-90 312.5 560)"/>
+<rect id="pied-d2" x="312.5" y="660" width="45" height="25" style="fill: #111;" transform="rotate(-90 312.5 560)"/>
+</g>
+<rect id="bras-g2" x="240" y="480" width="25" height="100" style="fill: #111;" transform="rotate(25 240 480)"/>
+<rect id="bras-d2" x="325" y="480" width="100" height="25" style="fill: #111;"/>
+</g>
+
+<g id="ninja3" onclick="ajouterPoint(5);" style="visibility: none;">
+<circle id="tete3" cx="500" cy="375" r="40" style="fill: beige;"/>
+<path id="cache-tete3" d="M460,375 a40,40 0 1,0 80,0" style="fill: #EFD807;stroke: none;"/>
+<circle id="cheveux03" cx="475" cy="340" r="10" style="fill: brown;"/>
+<circle id="cheveux13" cx="485" cy="335" r="10" style="fill: brown;"/>
+<circle id="cheveux23" cx="495" cy="330" r="10" style="fill: brown;"/>
+<circle id="cheveux33" cx="505" cy="330" r="10" style="fill: brown;"/>
+<circle id="cheveux43" cx="515" cy="335" r="10" style="fill: brown;"/>
+<circle id="cheveux53" cx="525" cy="340" r="10" style="fill: brown;"/>
+<circle id="oeil-g3" cx="485" cy="365" r="5" style="fill: black;"/>
+<circle id="oeil-d3" cx="515" cy="365" r="5" style="fill: black;"/>
+<rect id="cou-decouvert3" x="485" y="395" width="30" height="35" style="fill: #EFD807"/>
+<rect id="cou-couvert3" x="485" y="430" width="30" height="30" style="fill: #EFD807"/>
+<circle id="teeshirt-h3" cx="500" cy="505" r="50" style="fill: #EFD807;"/>
+<rect id="teeshirt-b3" x="450" y="505" width="100" height="55" style="fill: #EFD807;"/>
+<g id="jambes-g3">
+<rect id="jambe-g3" x="462.5" y="560" width="25" height="100" style="fill: #EFD807;"/>
+<rect id="pied-g3" x="462.5" y="660" width="45" height="25" style="fill: #EFD807;"/>
+</g>
+<g id="jambes-d3">
+<rect id="jambe-d3" x="512.5" y="560" width="25" height="100" style="fill: #EFD807;" transform="rotate(-90 512.5 560)"/>
+<rect id="pied-d3" x="512.5" y="660" width="45" height="25" style="fill: #EFD807;" transform="rotate(-90 512.5 560)"/>
+</g>
+<rect id="bras-g3" x="440" y="480" width="25" height="100" style="fill: #EFD807;" transform="rotate(25 440 480)"/>
+<rect id="bras-d3" x="525" y="480" width="100" height="25" style="fill: #EFD807;"/>
+</g>
+
+<g id="ninja4" onclick="retirerPoint(5);" style="visibility: none;">
+<circle id="tete4" cx="500" cy="375" r="40" style="fill: beige;"/>
+<path id="cache-tete4" d="M460,375 a40,40 0 1,0 80,0" style="fill: white;stroke: none;"/>
+<circle id="cheveux04" cx="475" cy="340" r="10" style="fill: brown;"/>
+<circle id="cheveux14" cx="485" cy="335" r="10" style="fill: brown;"/>
+<circle id="cheveux24" cx="495" cy="330" r="10" style="fill: brown;"/>
+<circle id="cheveux34" cx="505" cy="330" r="10" style="fill: brown;"/>
+<circle id="cheveux44" cx="515" cy="335" r="10" style="fill: brown;"/>
+<circle id="cheveux54" cx="525" cy="340" r="10" style="fill: brown;"/>
+<circle id="oeil-g4" cx="485" cy="365" r="5" style="fill: black;"/>
+<circle id="oeil-d4" cx="515" cy="365" r="5" style="fill: black;"/>
+<rect id="cou-decouvert4" x="485" y="395" width="30" height="35" style="fill: white"/>
+<rect id="cou-couvert4" x="485" y="430" width="30" height="30" style="fill: white"/>
+<circle id="teeshirt-h4" cx="500" cy="505" r="50" style="fill: white;"/>
+<rect id="teeshirt-b4" x="450" y="505" width="100" height="55" style="fill: white;"/>
+<g id="jambes-g4">
+<rect id="jambe-g4" x="462.5" y="560" width="25" height="100" style="fill: white;"/>
+<rect id="pied-g4" x="462.5" y="660" width="45" height="25" style="fill: white;"/>
+</g>
+<g id="jambes-d4">
+<rect id="jambe-d4" x="512.5" y="560" width="25" height="100" style="fill: white;" transform="rotate(-90 512.5 560)"/>
+<rect id="pied-d4" x="512.5" y="660" width="45" height="25" style="fill: white;" transform="rotate(-90 512.5 560)"/>
+</g>
+<rect id="bras-g4" x="440" y="480" width="25" height="100" style="fill: white;" transform="rotate(25 440 480)"/>
+<rect id="bras-d4" x="525" y="480" width="100" height="25" style="fill: white;"/>
+</g>
+
+<g id="info-rect">
+<rect id="infos-rect" x="100" y="700" width="800" height="150" style="fill: white;stroke: black;"/>
+<text id="points" x="150" y="750" style="font-size: 20px;">
+Points : <tspan id="info-points">0</tspan>
+<tspan id="info-temps" x="150" y="775" style="font-size: 20px;">Il reste 2 minutes et 0 secondes.</tspan>
+<tspan id="info-history" x="150" y="800" style="font-size: 20px;fill: orange;">Aucune action.</tspan>
+</text>
+
+<circle id="pause-c" cx="850" cy="750" r="25" style="fill: black;stroke: #888;stroke-width: 2px;" onclick="pause();"/>
+<rect x="830" y="738" width="12" height="25" style="fill: #888;stroke: #BBB;stroke-width: 2px;"/>
+<rect x="858" y="738" width="12" height="25" style="fill: #888;stroke: #BBB;stroke-width: 2px;"/>
+<text id="pause-t" x="850" y="800" style="font-size: 20px;text-anchor: middle;">PAUSE</text>
+</g>
+</g>
+<g id="home">
+<rect id="home-rect" x="100" y="100" width="800" height="600" style="fill: white;stroke: black;"/>
+
+<text id="title" x="500" y="250" style="font-size: 75px;text-anchor: middle;">AjninAttack</text>
+<text id="version" x="500" y="285" style="font-size: 25px;text-anchor: middle;fill: gray;">Version 2.1.1</text>
+
+<circle id="play-c" cx="500" cy="400" r="75" style="fill: black;stroke: #888;stroke-width: 2px;" onclick="play(false);"/>
+<polygon id="play-b" points="475,375 475,425 525,400" style="fill: #888;stroke: #BBB;stroke-width: 2px;"/>
+<text id="play-t" x="500" y="525" style="font-size: 50px;text-anchor: middle;">JOUER</text>
+
+<circle id="replay-c" cx="250" cy="400" r="75" style="fill: black;stroke: #888;stroke-width: 2px;" onclick="play(true);"/>
+<circle cx="250" cy="400" r="50" style="fill: none;stroke: #888;stroke-width: 10px;"/>
+<rect x="235" y="340" width="30" height="20" style="fill: black;"/>
+<polygon id="play-b" points="230,340 230,360 260,350" style="fill: #888;stroke: #BBB;stroke-width: 2px;"/>
+<text id="replay-t" x="250" y="525" style="font-size: 50px;text-anchor: middle;">REJOUER</text>
+
+<circle id="set-c" cx="750" cy="400" r="75" style="fill: black;stroke: #888;stroke-width: 2px;" onclick="settings();"/>
+
+<rect x="800" y="395" width="25" height="10" style="fill: #888;stroke: #BBB;stroke-width: 2px;"/>
+<rect x="800" y="395" width="25" height="10" style="fill: #888;stroke: #BBB;stroke-width: 2px;" transform="rotate(45 750 400)"/>
+<rect x="800" y="395" width="25" height="10" style="fill: #888;stroke: #BBB;stroke-width: 2px;" transform="rotate(90 750 400)"/>
+<rect x="800" y="395" width="25" height="10" style="fill: #888;stroke: #BBB;stroke-width: 2px;" transform="rotate(135 750 400)"/>
+<rect x="800" y="395" width="25" height="10" style="fill: #888;stroke: #BBB;stroke-width: 2px;" transform="rotate(180 750 400)"/>
+<rect x="800" y="395" width="25" height="10" style="fill: #888;stroke: #BBB;stroke-width: 2px;" transform="rotate(225 750 400)"/>
+<rect x="800" y="395" width="25" height="10" style="fill: #888;stroke: #BBB;stroke-width: 2px;" transform="rotate(270 750 400)"/>
+<rect x="800" y="395" width="25" height="10" style="fill: #888;stroke: #BBB;stroke-width: 2px;" transform="rotate(315 750 400)"/>
+
+<circle id="set-c" cx="750" cy="400" r="50" style="fill: none;stroke: #888;stroke-width: 10px;"/>
+<text id="set-t" x="750" y="525" style="font-size: 50px;text-anchor: middle;">RÉGLAGES</text>
+</g>
+<g id="settings" style="visibility: hidden;">
+<rect id="settings-rect" x="100" y="100" width="800" height="600" style="fill: white;stroke: black;"/>
+<text id="set-t" x="150" y="225" style="font-size: 75px;">
+<tspan onclick="retourSettings();">&#60;</tspan> 
+ Réglages
+</text>
+<text id="set-tmp" x="150" y="275" style="font-size: 25px;">
+Temps de jeu (en secondes) :
+<tspan id="set-tmpValue" onclick="getClavierNumber();">120</tspan>
+</text>
+<text id="set-negp" x="150" y="325" style="font-size: 25px;">
+Autoriser les points négatifs : 
+<tspan id="set-negpValue" onclick="changeSetAllowNegative();">Oui</tspan>
+</text>
+<text id="set-lang" x="150" y="375" style="font-size: 25px;">
+Langue : 
+<tspan id="set-langValue" onclick="alert('Impossible');">Français</tspan>
+</text>
+</g>
+<g id="clavierNumber" style="visibility: hidden;">
+<rect id="clavier-bn" x="0" y="825" width="1000" height="75" style="fill: #888;"/>
+<text style="fill: black;font-size: 25px;">
+<tspan x="10" y="875" onclick="addNumber(1);"> 1 </tspan> |
+<tspan x="60" y="875" onclick="addNumber(2);"> 2 </tspan> |
+<tspan x="110" y="875" onclick="addNumber(3);"> 3 </tspan> |
+<tspan x="160" y="875" onclick="addNumber(4);"> 4 </tspan> |
+<tspan x="210" y="875" onclick="addNumber(5);"> 5 </tspan> |
+<tspan x="260" y="875" onclick="addNumber(6);"> 6 </tspan> |
+<tspan x="310" y="875" onclick="addNumber(7);"> 7 </tspan> |
+<tspan x="360" y="875" onclick="addNumber(8);"> 8 </tspan> |
+<tspan x="410" y="875" onclick="addNumber(9);"> 9 </tspan> |
+<tspan x="460" y="875" onclick="addNumber(0);"> 0 </tspan> |
+<tspan x="510" y="875" onclick="supprNumber();"> &#x2190; </tspan> |
+<tspan x="560" y="875" onclick="setTempsDeJeu(document.getElementById('set-tmpValue').textContent);"> OK </tspan>
+</text>
+</g>
+</svg>
